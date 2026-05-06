@@ -1,18 +1,19 @@
 const Surgery = require("../models/surgeryModel");
+const SurgeryCategory = require("../models/surgeryCategory"); // ✅ FIXED
 const { uploadFile, deleteFile } = require("../utils/bunnyUpload");
 
 
-// 🔥 parse doctors
-const parseDoctors = (doctors) => {
-  if (!doctors) return [];
+// 🔥 helpers
+const parseArray = (data) => {
+  if (!data) return [];
 
-  if (Array.isArray(doctors)) return doctors;
+  if (Array.isArray(data)) return data;
 
-  if (typeof doctors === "string") {
+  if (typeof data === "string") {
     try {
-      return JSON.parse(doctors);
+      return JSON.parse(data);
     } catch {
-      return [doctors];
+      return [data];
     }
   }
 
@@ -20,36 +21,12 @@ const parseDoctors = (doctors) => {
 };
 
 
-// 🔥 parse benefits
-const parseBenefits = (benefits) => {
-  if (!benefits) return [];
-
-  if (Array.isArray(benefits)) return benefits;
-
-  if (typeof benefits === "string") {
-    try {
-      return JSON.parse(benefits);
-    } catch {
-      return [benefits];
-    }
-  }
-
-  return [];
-};
-
-
+// =======================
 // ✅ CREATE
+// =======================
 exports.createSurgery = async (req, res) => {
   try {
-    const {
-      name,
-      category,
-      duration,
-      benefits,
-      priceRange,
-      doctors,
-      icon
-    } = req.body;
+    const { name, category, duration, benefits, priceRange, doctors, icon } = req.body;
 
     if (!name || !category || !duration) {
       return res.status(400).json({
@@ -58,10 +35,20 @@ exports.createSurgery = async (req, res) => {
       });
     }
 
+    // ✅ category check
+    const categoryExists = await SurgeryCategory.findById(category);
+    if (!categoryExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID"
+      });
+    }
+
     let iconData = null;
 
     if (req.files?.icon?.length > 0) {
       const uploadRes = await uploadFile(req.files.icon[0]);
+
       iconData = {
         url: uploadRes.url,
         publicId: uploadRes.publicId
@@ -77,25 +64,37 @@ exports.createSurgery = async (req, res) => {
       });
     }
 
-    const data = await Surgery.create({
+    const surgery = await Surgery.create({
       name,
       category,
       duration,
-      benefits: parseBenefits(benefits),
+      benefits: parseArray(benefits),
       priceRange,
-      doctors: parseDoctors(doctors),
+      doctors: parseArray(doctors),
       icon: iconData
     });
 
-    res.json({ success: true, data });
+    const populated = await Surgery.findById(surgery._id)
+      .populate("category")
+      .populate("doctors");
+
+    res.status(201).json({
+      success: true,
+      data: populated
+    });
 
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 
 
-// ✅ GET ALL (PAGINATION + SEARCH)
+// =======================
+// ✅ GET ALL
+// =======================
 exports.getSurgeries = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
@@ -111,97 +110,144 @@ exports.getSurgeries = async (req, res) => {
     const total = await Surgery.countDocuments(query);
 
     const data = await Surgery.find(query)
+      .populate("category")
       .populate("doctors")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-
-    const totalPages = Math.max(Math.ceil(total / limit), 1);
 
     res.json({
       success: true,
       page,
       limit,
       total,
-      totalPages,
-      hasNextPage: page < totalPages,
-      hasPrevPage: page > 1,
-      nextPage: page < totalPages ? page + 1 : null,
-      prevPage: page > 1 ? page - 1 : null,
+      totalPages: Math.ceil(total / limit),
       data
     });
 
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 
 
+// =======================
 // ✅ GET ONE
+// =======================
 exports.getSurgeryById = async (req, res) => {
-  const data = await Surgery.findById(req.params.id).populate("doctors");
+  try {
+    const data = await Surgery.findById(req.params.id)
+      .populate("category")
+      .populate("doctors");
 
-  if (!data) return res.status(404).json({ success: false });
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Surgery not found"
+      });
+    }
 
-  res.json({ success: true, data });
+    res.json({ success: true, data });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 };
 
 
+// =======================
 // ✅ UPDATE
+// =======================
 exports.updateSurgery = async (req, res) => {
-  const item = await Surgery.findById(req.params.id);
+  try {
+    const item = await Surgery.findById(req.params.id);
 
-  if (!item) return res.status(404).json({ success: false });
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: "Surgery not found"
+      });
+    }
 
-  const {
-    name,
-    category,
-    duration,
-    benefits,
-    priceRange,
-    doctors,
-    icon
-  } = req.body;
+    const { name, category, duration, benefits, priceRange, doctors, icon } = req.body;
 
-  if (name) item.name = name;
-  if (category) item.category = category;
-  if (duration) item.duration = duration;
-  if (priceRange) item.priceRange = priceRange;
+    if (name) item.name = name;
+    if (duration) item.duration = duration;
+    if (priceRange) item.priceRange = priceRange;
 
-  if (benefits) item.benefits = parseBenefits(benefits);
-  if (doctors) item.doctors = parseDoctors(doctors);
+    if (category) {
+      const categoryExists = await SurgeryCategory.findById(category);
+      if (!categoryExists) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid category ID"
+        });
+      }
+      item.category = category;
+    }
 
-  if (req.files?.icon?.length > 0) {
-    if (item.icon?.publicId) await deleteFile(item.icon.publicId);
+    if (benefits) item.benefits = parseArray(benefits);
+    if (doctors) item.doctors = parseArray(doctors);
 
-    const uploadRes = await uploadFile(req.files.icon[0]);
+    if (req.files?.icon?.length > 0) {
+      if (item.icon?.publicId) await deleteFile(item.icon.publicId);
 
-    item.icon = {
-      url: uploadRes.url,
-      publicId: uploadRes.publicId
-    };
+      const uploadRes = await uploadFile(req.files.icon[0]);
+
+      item.icon = {
+        url: uploadRes.url,
+        publicId: uploadRes.publicId
+      };
+    }
+
+    await item.save();
+
+    res.json({ success: true, data: item });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
-
-  else if (icon?.url && icon?.publicId) {
-    if (item.icon?.publicId) await deleteFile(item.icon.publicId);
-    item.icon = icon;
-  }
-
-  await item.save();
-
-  res.json({ success: true, data: item });
 };
 
 
+// =======================
 // ✅ DELETE
+// =======================
 exports.deleteSurgery = async (req, res) => {
-  const item = await Surgery.findById(req.params.id);
+  try {
+    const item = await Surgery.findById(req.params.id);
 
-  if (!item) return res.status(404).json({ success: false });
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: "Surgery not found"
+      });
+    }
 
-  if (item.icon?.publicId) await deleteFile(item.icon.publicId);
+    if (item.icon?.publicId) {
+      await deleteFile(item.icon.publicId);
+    }
 
-  await item.deleteOne();
+    await item.deleteOne();
 
-  res.json({ success: true });
+    res.json({
+      success: true,
+      message: "Deleted successfully"
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 };

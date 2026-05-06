@@ -8,8 +8,10 @@ const surgerySchema = new mongoose.Schema(
       trim: true
     },
 
+    // ✅ CATEGORY ID (relation)
     category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SurgeryCategory",
       required: true
     },
 
@@ -29,18 +31,13 @@ const surgerySchema = new mongoose.Schema(
       }
     },
 
-    benefits: [
-      {
-        type: String
-      }
-    ],
+    benefits: [{ type: String }],
 
     priceRange: {
       type: String,
       default: ""
     },
 
-    // 🔥 DOCTOR RELATION
     doctors: [
       {
         type: mongoose.Schema.Types.ObjectId,

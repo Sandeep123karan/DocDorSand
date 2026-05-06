@@ -1,4 +1,4 @@
-const LabCategory = require("../models/labCategoryModel");
+const LabCategory = require("../models/LabCategoryModel");
 const { uploadFile, deleteFile } = require("../utils/bunnyUpload");
 
 // ================= CREATE =================
