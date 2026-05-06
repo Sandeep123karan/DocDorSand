@@ -1,17 +1,16 @@
-// routes/profileRoutes.js
-
 const express = require("express");
 
 const router = express.Router();
 
 
-
 // ================= MIDDLEWARE =================
 
-const upload = require(
-  "../middleware/upload"
-);
+const upload = require("../middleware/upload");
 
+const {
+  protect,
+  adminOnly,
+} = require("../middleware/authMiddleware");
 
 
 // ================= CONTROLLER =================
@@ -22,9 +21,7 @@ const {
   getProfileById,
   updateProfile,
   deleteProfile,
-} = require(
-  "../controllers/profileController"
-);
+} = require("../controllers/profileController");
 
 
 
@@ -32,6 +29,8 @@ const {
 
 router.post(
   "/create",
+
+  protect,
 
   upload.fields([
     {
@@ -47,8 +46,15 @@ router.post(
 
 // ================= GET ALL PROFILES =================
 
+// 👉 admin only
+
 router.get(
   "/all",
+
+  protect,
+
+
+
   getProfiles
 );
 
@@ -58,6 +64,9 @@ router.get(
 
 router.get(
   "/:id",
+
+  protect,
+
   getProfileById
 );
 
@@ -67,6 +76,8 @@ router.get(
 
 router.put(
   "/update/:id",
+
+  protect,
 
   upload.fields([
     {
@@ -82,9 +93,16 @@ router.put(
 
 // ================= DELETE PROFILE =================
 
+// 👉 admin only
+
 router.delete(
   "/delete/:id",
+
+  protect,
+
+  adminOnly,
+
   deleteProfile
-); 
+);
 
 module.exports = router;
