@@ -1,5 +1,5 @@
 const Surgery = require("../models/surgeryModel");
-const SurgeryCategory = require("../models/surgeryCategory"); // ✅ FIXED
+const SurgeryCategory = require("../models/SurgeryCategory"); // ✅ FIXED
 const { uploadFile, deleteFile } = require("../utils/bunnyUpload");
 
 
