@@ -1,45 +1,117 @@
+// const mongoose = require("mongoose");
+
+// const appointmentSchema = new mongoose.Schema({
+//   userId: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "User",
+//     required: true
+//   },
+
+//   doctorId: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "Doctor",
+//     required: true
+//   },
+
+//   date: {
+//     type: String,
+//     required: true
+//   },
+
+//   time: {
+//     type: String,
+//     required: true
+//   },
+
+//   type: {
+//     type: String,
+//     enum: ["online", "in-person"],
+//     required: true
+//   },
+
+// status: {
+//   type: String,
+//   enum: [
+//     "pending",
+//     "confirmed",
+//     "completed",
+//     "cancelled"
+//   ],
+//   default: "pending"
+// }
+
+// }, { timestamps: true });
+
+// module.exports = mongoose.model("Appointment", appointmentSchema);
+
+
+
+
 const mongoose = require("mongoose");
 
-const appointmentSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
+const appointmentSchema =
+  new mongoose.Schema(
+    {
+      userId: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
 
-  doctorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Doctor",
-    required: true
-  },
+      doctorId: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+        ref: "Doctor",
+        required: true,
+      },
 
-  date: {
-    type: String,
-    required: true
-  },
+      date: {
+        type: String,
+        required: true,
+      },
 
-  time: {
-    type: String,
-    required: true
-  },
+      time: {
+        type: String,
+        required: true,
+      },
 
-  type: {
-    type: String,
-    enum: ["online", "in-person"],
-    required: true
-  },
+      type: {
+        type: String,
+        enum: [
+          "online",
+          "in-person",
+        ],
+        required: true,
+      },
 
-status: {
-  type: String,
-  enum: [
-    "pending",
-    "confirmed",
-    "completed",
-    "cancelled"
-  ],
-  default: "pending"
-}
+      // ✅ USER LOCATION
+      latitude: {
+        type: Number,
+        required: true,
+      },
 
-}, { timestamps: true });
+      longitude: {
+        type: Number,
+        required: true,
+      },
 
-module.exports = mongoose.model("Appointment", appointmentSchema);
+      status: {
+        type: String,
+        enum: [
+          "pending",
+          "confirmed",
+          "completed",
+          "cancelled",
+        ],
+        default: "pending",
+      },
+    },
+    { timestamps: true }
+  );
+
+module.exports =
+  mongoose.model(
+    "Appointment",
+    appointmentSchema
+  );
