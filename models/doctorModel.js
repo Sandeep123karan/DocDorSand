@@ -53,7 +53,42 @@ const doctorSchema = new mongoose.Schema(
       default: 0
     },
 
-   
+    // =====================================
+    // 📍 LOCATION
+    // =====================================
+
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point"
+      },
+
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true
+      }
+    },
+
+    address: {
+      type: String,
+      default: ""
+    },
+
+    city: {
+      type: String,
+      default: ""
+    },
+
+    state: {
+      type: String,
+      default: ""
+    },
+
+    pincode: {
+      type: String,
+      default: ""
+    },
 
     isActive: {
       type: Boolean,
@@ -64,7 +99,18 @@ const doctorSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// =====================================
+// 📍 GEO INDEX
+// =====================================
 
-// 🔥 SAFE EXPORT (Overwrite error avoid karega)
+doctorSchema.index({
+  location: "2dsphere"
+});
+
+// 🔥 SAFE EXPORT
 module.exports =
-  mongoose.models.Doctor || mongoose.model("Doctor", doctorSchema);
+  mongoose.models.Doctor ||
+  mongoose.model(
+    "Doctor",
+    doctorSchema
+  );
