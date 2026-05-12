@@ -11,7 +11,7 @@ const app = express();
 // ✅ CORS (MUST BE FIRST)
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001", "https://slategrey-antelope-556296.hostingersite.com",],
+    origin: ["http://localhost:3000", "http://localhost:3001"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -121,7 +121,7 @@ const medicineOrderRoutes = require(
 app.use(
   "/api/medicine-orders",
   medicineOrderRoutes
-);
+); 
 const labBookingRoutes = require(
   "./routes/labBookingRoutes"
 );
@@ -136,6 +136,27 @@ app.use(
 app.use(
   "/api/pet-orders",
   petOrderRoutes
+);app.use(
+
+  "/api/user-chat",
+
+  require(
+    "./routes/userChatRoutes"
+  )
+
+);
+/* =====================================================
+   🎥 VIDEO CALL ROUTES
+===================================================== */
+
+app.use(
+
+  "/api/video-call",
+
+  require(
+    "./routes/videoCallRoutes"
+  )
+
 );
 const walletRoutes = require("./routes/walletRoutes");
 app.use("/api/wallet", walletRoutes);
