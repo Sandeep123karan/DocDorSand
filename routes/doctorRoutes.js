@@ -1,23 +1,103 @@
 const express = require("express");
+
 const router = express.Router();
+
 const multer = require("multer");
-const upload = multer({ storage: multer.memoryStorage() });
 
-const doctorController = require("../controllers/doctorController");
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 
-// ✅ CREATE DOCTOR with image upload
-router.post("/", upload.fields([{ name: "image", maxCount: 1 }]), doctorController.createDoctor);
 
-// ✅ GET ALL DOCTORS
-router.get("/", doctorController.getDoctors);
 
-// ✅ GET SINGLE DOCTOR
-router.get("/:id", doctorController.getDoctorById);
+// ================= CONTROLLER =================
 
-// ✅ UPDATE DOCTOR with image upload
-router.put("/:id", upload.fields([{ name: "image", maxCount: 1 }]), doctorController.updateDoctor);
+const doctorController = require(
+  "../controllers/doctorController"
+);
 
-// ✅ DELETE DOCTOR
-router.delete("/:id", doctorController.deleteDoctor);
+
+
+// =====================================================
+// ================= GET ALL DOCTORS ===================
+// =====================================================
+
+router.get(
+  "/",
+
+  doctorController.getDoctors
+);
+
+// =====================================================
+// ================= CREATE DOCTOR =====================
+// =====================================================
+
+router.post(
+  "/",
+  upload.single("image"),
+  doctorController.createDoctor
+);
+
+// =====================================================
+// ================= GET SINGLE DOCTOR =================
+// =====================================================
+
+router.get(
+  "/:id",
+
+  doctorController.getDoctorById
+);
+
+
+
+// =====================================================
+// ================= UPDATE DOCTOR =====================
+// =====================================================
+
+router.put(
+  "/:id",
+
+  upload.single("image"),
+
+  doctorController.updateDoctor
+);
+
+
+
+// =====================================================
+// ================= DELETE DOCTOR =====================
+// =====================================================
+
+router.delete(
+  "/:id",
+
+  doctorController.deleteDoctor
+);
+
+
+
+// =====================================================
+// ================= APPROVE DOCTOR ====================
+// =====================================================
+
+router.put(
+  "/approve/:id",
+
+  doctorController.approveDoctor
+);
+
+
+
+// =====================================================
+// ================= BLOCK DOCTOR ======================
+// =====================================================
+
+router.put(
+  "/block/:id",
+
+  doctorController.blockDoctor
+);
+
+
 
 module.exports = router;
