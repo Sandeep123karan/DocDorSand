@@ -11,7 +11,7 @@ const app = express();
 // ✅ CORS (MUST BE FIRST)
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: ["http://localhost:3000", "http://localhost:3001","https://docdorsand.onrender.com","https://sandeepdocside.onrender.com],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
